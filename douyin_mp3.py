@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-抖音 → MP3 下载器（无需 Cookie / yt-dlp / ffmpeg）
-原理：解析 iesdouyin.com 分享页 HTML，直接获取音乐直链
-"""
 import sys, os, re, threading, shutil, tempfile, subprocess, json, urllib.parse
 
 for _pkg, _mod in [("requests","requests"), ("pygame","pygame")]:
@@ -33,7 +28,6 @@ HEADERS = {
     "Accept-Language": "zh-CN,zh;q=0.9",
 }
 
-# ── 工具函数 ───────────────────────────────────────────────────────────────────
 def extract_short_url(text):
     for pat in [
         r'https?://v\.douyin\.com/[A-Za-z0-9/_?=&%.+\-]+',
@@ -47,7 +41,6 @@ def extract_short_url(text):
 
 
 def resolve_video_id(url):
-    """跟随重定向提取视频 ID"""
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15, allow_redirects=True)
         all_urls = ([r.headers.get("Location", "") for r in resp.history]
@@ -64,7 +57,6 @@ def resolve_video_id(url):
 
 
 def _find_nested(obj, keys):
-    """递归在嵌套结构中寻找指定 key"""
     if isinstance(obj, dict):
         for k in keys:
             if k in obj and obj[k]:
@@ -82,11 +74,6 @@ def _find_nested(obj, keys):
 
 
 def fetch_douyin_info(video_id):
-    """
-    依次尝试多种方式获取视频音乐信息
-    返回包含 music 字段的 dict，失败返回 None
-    """
-    # ── 方案 1/2/3: 官方 API（已加密，多数情况失败，但保留备用）──────────────
     api_attempts = [
         (
             "https://www.iesdouyin.com/aweme/v1/web/aweme/detail/"
@@ -120,7 +107,6 @@ def fetch_douyin_info(video_id):
         except Exception as e:
             print("[DEBUG] API 异常:", e)
 
-    # ── 方案 4: 解析 HTML 分享页（2025 主力方案：window._ROUTER_DATA）─────────
     try:
         share_url = "https://www.iesdouyin.com/share/video/{}/".format(video_id)
         print("[DEBUG] 请求 HTML:", share_url)
@@ -128,7 +114,6 @@ def fetch_douyin_info(video_id):
         html = resp.text
         print("[DEBUG] HTML 长度: {} bytes".format(len(html)))
 
-        # ★ 优先：window._ROUTER_DATA（iesdouyin 2024+ 标准格式）
         m = re.search(r'window\._ROUTER_DATA\s*=\s*(\{.+?\})\s*(?:;|</script>)',
                       html, re.S)
         if m:
@@ -143,7 +128,6 @@ def fetch_douyin_info(video_id):
             except Exception as e2:
                 print("[DEBUG] _ROUTER_DATA 解析失败:", e2)
 
-        # ★ 备用：window._SSR_DATA
         m = re.search(r'window\._SSR_DATA\s*=\s*(\{.+?\})\s*(?:;|</script>)',
                       html, re.S)
         if m:
@@ -158,14 +142,12 @@ def fetch_douyin_info(video_id):
             except Exception as e2:
                 print("[DEBUG] _SSR_DATA 解析失败:", e2)
 
-        # 列出所有 script 标签（fallback 调试用）
         for i, m in enumerate(re.finditer(r'<script([^>]*)>(.*?)</script>', html, re.S)):
             attrs, body = m.group(1).strip(), m.group(2).strip()
             if body and len(body) > 50:
                 print("[DEBUG] script[{}] attrs={!r} len={} head={!r}".format(
                     i, attrs[:50], len(body), body[:80]))
 
-        # A: id="RENDER_DATA" — iesdouyin 标准格式，内容为 URL 编码 JSON
         m = re.search(r'id=["\']RENDER_DATA["\'][^>]*>(.+?)</script>', html, re.S)
         if m:
             raw = m.group(1).strip()
@@ -186,7 +168,6 @@ def fetch_douyin_info(video_id):
                 except Exception:
                     pass
 
-        # B: __NEXT_DATA__
         m = re.search(r'<script[^>]+id=["\']__NEXT_DATA__["\'][^>]*>(.+?)</script>',
                       html, re.S)
         if m:
@@ -203,7 +184,6 @@ def fetch_douyin_info(video_id):
             except Exception as e2:
                 print("[DEBUG] __NEXT_DATA__ 失败:", e2)
 
-        # C: 最大 script 块
         big_scripts = sorted(
             re.findall(r'<script[^>]*>(.{500,}?)</script>', html, re.S),
             key=len, reverse=True
@@ -223,14 +203,12 @@ def fetch_douyin_info(video_id):
                 except Exception:
                     pass
 
-        # D: 直接从 HTML 文本 regex 找音乐 URL（最终保底）
         print("[DEBUG] 直接 regex 找音乐 URL")
-        # 找 play_url.url_list 里的 URL
+
         mu = re.search(
             r'"play_url"\s*:\s*\{[^{}]*?"url_list"\s*:\s*\["(https://[^"]+)"',
             html, re.S)
         if not mu:
-            # 抖音 CDN 域名特征
             for cdn in ["douyinvod.com", "byteimg.com", "snssdk.com",
                         "tosv.boe", "v3-dy", "v26-dy", "v9-dy"]:
                 mu = re.search(r'"(https://[^"]*' + re.escape(cdn) + r'[^"]*)"', html)
@@ -252,7 +230,6 @@ def fetch_douyin_info(video_id):
                 "desc": "",
             }
 
-        # 打印 aweme_id 附近内容供调试
         idx = html.find(video_id)
         if idx != -1:
             print("[DEBUG] video_id 附近内容:",
@@ -277,27 +254,22 @@ def get_music_info(item):
     author = (music.get("author") or
               (item.get("author") or {}).get("nickname", ""))
 
-    # 路径 1: music.play_url.url_list (MP3 片段)
     urls = (music.get("play_url") or {}).get("url_list") or []
     if urls:
         print("[DEBUG] 音乐URL (music):", urls[0][:80])
         return urls[0], title[:60], author, False
 
-    # 路径 2: music.play_url 是字符串
     pu = music.get("play_url")
     if isinstance(pu, str) and pu.startswith("http"):
         print("[DEBUG] 音乐URL (str):", pu[:80])
         return pu, title[:60], author, False
 
-    # 路径 3: 视频 MP4（fallback）
     video = item.get("video") or {}
     print("[DEBUG] video keys:", list(video.keys()) if video else "无 video 字段")
     pa = video.get("play_addr") or {}
     vurls = pa.get("url_list") or []
     if vurls:
-        # 优先选 mp4 链接
         mp4 = next((u for u in vurls if "mp4" in u.lower()), vurls[0])
-        # 抖音视频URL: playwm → play 可去水印（但音频相同）
         mp4 = mp4.replace("playwm", "play")
         print("[DEBUG] 视频URL (MP4):", mp4[:80])
         return mp4, title[:60], author, True
@@ -320,8 +292,6 @@ def fmt_time(s):
     except Exception:
         return "00:00"
 
-
-# ── 可拖动进度条 ───────────────────────────────────────────────────────────────
 class SeekBar(tk.Canvas):
     TRACK_H = 4
     THUMB_R = 7
@@ -366,7 +336,6 @@ class SeekBar(tk.Canvas):
             self._on_seek(frac)
 
 
-# ── 主应用 ─────────────────────────────────────────────────────────────────────
 class DouyinApp:
     BG    = "#f0f0f0"; PANEL = "#ffffff"; PAN2 = "#e8e8e8"
     BLUE  = "#0078d4"; BLUA  = "#005a9e"
@@ -536,7 +505,6 @@ class DouyinApp:
                 dur = self._item.get("duration", 0) or 0
                 if not dur:
                     dur = (self._item.get("video") or {}).get("duration", 0) or 0
-                # Douyin video duration usually in milliseconds
                 dur = dur / 1000 if dur > 1000 else dur
             else:
                 dur = (self._item.get("music") or {}).get("duration", 0) or 0
@@ -717,7 +685,6 @@ class DouyinApp:
     def _dl_worker(self, save_dir):
         os.makedirs(save_dir, exist_ok=True)
         safe = re.sub(r'[\\/:*?"<>|]', "_", self._music_title)[:80] or "audio"
-        # 视频先下载到临时 MP4，再尝试用 ffmpeg 转 MP3
         if self._is_video:
             tmp_mp4 = os.path.join(save_dir, safe + ".mp4")
             final_mp3 = os.path.join(save_dir, safe + ".mp3")
@@ -728,7 +695,6 @@ class DouyinApp:
                 with open(tmp_mp4, "wb") as f:
                     for chunk in resp.iter_content(65536):
                         if chunk: f.write(chunk)
-                # 尝试 ffmpeg 提取音频
                 if _has_ffmpeg():
                     print("[DEBUG] ffmpeg 提取音频:", tmp_mp4, "->", final_mp3)
                     r = subprocess.run(
@@ -743,14 +709,12 @@ class DouyinApp:
                         return
                     else:
                         print("[DEBUG] ffmpeg 错误:", r.stderr.decode("utf-8", errors="ignore")[:200])
-                # ffmpeg 不可用或失败：保留 MP4
                 self.root.after(0, lambda: self._dl_done(tmp_mp4, save_dir))
             except Exception as exc:
                 err = str(exc)
                 self.root.after(0, lambda: self._dl_err(err))
             return
 
-        # 音乐：直接下载为 MP3
         dest = os.path.join(save_dir, safe + ".mp3")
         try:
             resp = requests.get(self._music_url, headers=HEADERS,
