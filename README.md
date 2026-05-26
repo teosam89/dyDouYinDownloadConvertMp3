@@ -1,6 +1,4 @@
 # dyDouYinDownloadConvertMp3
-一个简化的UI抖音链接下载器直转MP3格式
-
 一个轻量级的抖音视频/音频解析与下载工具，带可视化图形界面（GUI）。
 
 **核心亮点：无需配置 Cookie、无需 yt-dlp，支持直接提取 MP3 或下载原视频。**
