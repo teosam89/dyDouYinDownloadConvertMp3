@@ -1,4 +1,48 @@
-# dyDouYinDownloadConvertMp3
+<div align="right">
+  <strong>Languages:</strong>
+  <a href="#english-version">English</a> |
+  <a href="#简体中文版本">简体中文</a>
+</div>
+
+
+<h2 id="english-version">dyDouYinDownloadConvertMp3 (English) </h2>
+
+A lightweight Douyin (TikTok China) video/audio parsing and downloading tool with a graphical user interface (GUI).
+**Core Highlight: No Cookie configuration required, no yt-dlp needed, supports direct MP3 extraction or original video download.**
+
+### ✨ Features
+* **Zero-config parsing:** Direct paste Douyin share link/text, automatically extracts watermark-free resources.
+* **Visual operation:** Simple UI built with `Tkinter`, featuring intuitive progress bars and status prompts.
+* **Online preview:** Built-in `pygame` player, allows online playback and seeking before downloading.
+* **Smart format handling:** * If the original video has a standalone audio track, directly downloads MP3.
+  * If the video has mixed audio, automatically calls `ffmpeg` to extract audio (requires local FFmpeg installation).
+* **Auto-dependency installation:** First run auto-detects and installs missing Python libraries.
+
+### 🛠️ Prerequisites
+* **Python:** 3.x and above.
+* **FFmpeg (Optional):** Required only if you need to force extract MP3 from MP4 video streams. Ensure `ffmpeg` is added to your system environment variables.
+
+### 🚀 Quick Start
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/teosam89/dyDouYinDownloadConvertMp3.git](https://github.com/teosam89/dyDouYinDownloadConvertMp3.git)
+   cd dyDouYinDownloadConvertMp3
+
+2. **Bash**
+
+   python douyin_mp3.py
+
+4. **Usage**
+
+   Paste the Douyin share link, click "🔍 侦测资源" (Detect Resource). Once parsed, you can preview or download the MP3.
+
+# Disclaimer
+This project is for educational and personal research purposes only. Please do not use it for commercial purposes. The copyright of the downloaded media belongs to the original platform and authors.
+
+# License
+This project is licensed under the MIT License.
+
+<h2 id="简体中文版本">dyDouYinDownloadConvertMp3 (简体中文) </h2>
 一个轻量级的抖音视频/音频解析与下载工具，带可视化图形界面（GUI）。
 
 **核心亮点：无需配置 Cookie、无需 yt-dlp，支持直接提取 MP3 或下载原视频。**
@@ -21,13 +65,17 @@
    git clone [https://github.com/teosam89/dyDouYinDownloadConvertMp3.git](https://github.com/teosam89/dyDouYinDownloadConvertMp3.git)
    cd dyDouYinDownloadConvertMp3
 
-2. Bash
-python douyin_mp3.py
+2. **Bash**
 
-3. 使用说明：
-在输入框粘贴抖音分享链接（例如：https://v.douyin.com/xxxx/）。
-点击 “侦测资源”。
-解析成功后，可点击 “▶ 在线试听” 或 “⬇ 立即下载 MP3”，文件默认将保存至系统的 Downloads 文件夹。
+   python douyin_mp3.py
+
+4. **使用说明：**
+
+   在输入框粘贴抖音分享链接（例如：https://v.douyin.com/xxxx/）。
+
+   点击 “侦测资源”。
+   
+   解析成功后，可点击 “▶ 在线试听” 或 “⬇ 立即下载 MP3”，文件默认将保存至系统的 Downloads 文件夹。
 
 # 免责声明
 本项目仅供学习编程技术及个人研究使用，请勿用于任何商业用途。下载的音视频版权归原平台及原作者所有。请合理、合法地使用本工具，因滥用导致的任何责任由使用者自行承担。
