@@ -10,7 +10,7 @@
 A lightweight Douyin (TikTok China) video/audio parsing and downloading tool with a graphical user interface (GUI).
 **Core Highlight: No Cookie configuration required, no yt-dlp needed, supports direct MP3 extraction or original video download.**
 
-### ✨ Features
+### Features
 * **Zero-config parsing:** Direct paste Douyin share link/text, automatically extracts watermark-free resources.
 * **Visual operation:** Simple UI built with `Tkinter`, featuring intuitive progress bars and status prompts.
 * **Online preview:** Built-in `pygame` player, allows online playback and seeking before downloading.
@@ -18,11 +18,11 @@ A lightweight Douyin (TikTok China) video/audio parsing and downloading tool wit
   * If the video has mixed audio, automatically calls `ffmpeg` to extract audio (requires local FFmpeg installation).
 * **Auto-dependency installation:** First run auto-detects and installs missing Python libraries.
 
-### 🛠️ Prerequisites
+### Prerequisites
 * **Python:** 3.x and above.
 * **FFmpeg (Optional):** Required only if you need to force extract MP3 from MP4 video streams. Ensure `ffmpeg` is added to your system environment variables.
 
-### 🚀 Quick Start
+### Quick Start
 1. **Clone the repository:**
    ```bash
    git clone [https://github.com/teosam89/dyDouYinDownloadConvertMp3.git](https://github.com/teosam89/dyDouYinDownloadConvertMp3.git)
@@ -34,7 +34,7 @@ A lightweight Douyin (TikTok China) video/audio parsing and downloading tool wit
 
 4. **Usage**
 
-   Paste the Douyin share link, click "🔍 侦测资源" (Detect Resource). Once parsed, you can preview or download the MP3.
+   Paste the Douyin share link, click "侦测资源" (Detect Resource). Once parsed, you can preview or download the MP3.
 
 # Disclaimer
 This project is for educational and personal research purposes only. Please do not use it for commercial purposes. The copyright of the downloaded media belongs to the original platform and authors.
@@ -75,7 +75,7 @@ This project is licensed under the MIT License.
 
    点击 “侦测资源”。
    
-   解析成功后，可点击 “▶ 在线试听” 或 “⬇ 立即下载 MP3”，文件默认将保存至系统的 Downloads 文件夹。
+   解析成功后，可点击 “ 在线试听” 或 “ 立即下载 MP3”，文件默认将保存至系统的 Downloads 文件夹。
 
 # 免责声明
 本项目仅供学习编程技术及个人研究使用，请勿用于任何商业用途。下载的音视频版权归原平台及原作者所有。请合理、合法地使用本工具，因滥用导致的任何责任由使用者自行承担。
